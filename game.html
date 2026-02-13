@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoinPay Game</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f2f2f2;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    background:#fff;
+    padding:25px;
+    width:360px;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
+    text-align:center;
+    position:relative;
+}
+
+/* زر الإشعارات */
+#notifBtn {
+    position: absolute;
+    top:10px;
+    left:10px;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    border:none;
+    background:#e60000;
+    color:#fff;
+    font-size:18px;
+    cursor:pointer;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* فقاعة الرقم */
+.badge {
+    position:absolute;
+    top:-5px;
+    right:-5px;
+    background:yellow;
+    color:black;
+    border-radius:50%;
+    padding:2px 6px;
+    font-size:12px;
+    font-weight:bold;
+    display:none;
+}
+
+/* صندوق الرسائل */
+#notifBox {
+    display:none; /* يظهر عند الضغط فقط */
+    position:absolute;
+    top:50px;
+    left:10px;
+    width:300px;
+    max-height:200px;
+    overflow-y:auto;
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.2);
+    padding:10px;
+    z-index:10;
+    text-align:right;
+}
+
+.notif-item{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    margin-bottom:5px;
+    background:#f9f9f9;
+    padding:4px 6px;
+    border-radius:5px;
+    gap:8px;
+}
+
+.delete-btn{
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-size:14px;
+    width:16px;
+    height:16px;
+    line-height:16px;
+    padding:0;
+    text-align:center;
+    color:red;
+}
+
+/* الرسالة على اليمين */
+.notif-item span{
+    flex-grow:1;
+    text-align:right;
+}
+
+h2{margin-bottom:10px}
+#balance{font-size:18px;margin-bottom:15px}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:6px 0;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+
+button{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border:none;
+    border-radius:6px;
+    background:#e60000;
+    color:#fff;
+    font-size:15px;
+    cursor:pointer;
+}
+
+button:hover{background:#ff0000}
+
+.small-btn{
+    background:#222;
+    margin-top:6px;
+}
+.small-btn:hover{background:rgb(255, 0, 0)}
+
+.error{
+    color:red;
+    font-size:14px;
+    margin-top:6px
+}
+
+#depositBox{
+    display:none;
+    border:1px solid #ccc;
+    padding:10px;
+    border-radius:8px;
+    margin-top:8px;
+}
+
+/* تصميم جدول سجل التحويلات */
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    font-size:14px;
+}
+
+th,td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+}
+
+th{
+    background:#222;
+    color:#fff;
+}
+
+.arrow-up {
+    color:green;
+    font-size:18px;
+}
+
+.arrow-down {
+    color:red;
+    font-size:18px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<!-- زر الإشعارات -->
+<button id="notifBtn">
+    🔔<span id="notifCount" class="badge">0</span>
+</button>
+
+<!-- صندوق الرسائل -->
+<div id="notifBox">
+    <ul id="notifList"></ul>
+</div>
+
+<h2 id="welcome"></h2>
+<div id="balance"></div>
+<hr>
+
+<h3>تحويل عملات</h3>
+<input id="toUser" placeholder="اسم المستخدم">
+<input id="amount" type="number" placeholder="المبلغ">
+<button id="sendBtn">تحويل</button>
+<p class="error" id="msg"></p>
+
+<button id="depositBtn">طلب إيداع</button>
+<div id="depositBox">
+    <input id="depositAmount" type="number" placeholder="المبلغ">
+    <button id="sendDepositBtn">إرسال الطلب</button>
+    <p class="error" id="depositMsg"></p>
+</div>
+
+<hr>
+
+<button class="small-btn" id="editBtn">تعديل الحساب</button>
+<button class="small-btn" id="historyBtn">سجل التحويلات</button>
+<button id="logoutBtn">تسجيل خروج</button>
+
+<table id="historyTable" style="display:none">
+<thead>
+<tr>
+    <th>من</th>
+    <th>المبلغ</th>
+    <th>التاريخ</th>
+    <th>التوجيه</th>
+</tr>
+</thead>
+<tbody id="historyBody"></tbody>
+</table>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get, child, update, push, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB9mzy7VtnJV28qawDMYYEfTr8guf9Z5hQ",
+  authDomain: "coinpay-3f182.firebaseapp.com",
+  databaseURL: "https://coinpay-3f182-default-rtdb.firebaseio.com",
+  projectId: "coinpay-3f182",
+  storageBucket: "coinpay-3f182.firebasestorage.app",
+  messagingSenderId: "9785521136",
+  appId: "1:9785521136:web:117b57499cb35ba5db6335"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const welcome = document.getElementById("welcome");
+const balanceEl = document.getElementById("balance");
+const msg = document.getElementById("msg");
+const sendBtn = document.getElementById("sendBtn");
+const toUser = document.getElementById("toUser");
+const amount = document.getElementById("amount");
+const editBtn = document.getElementById("editBtn");
+const historyBtn = document.getElementById("historyBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const historyTable = document.getElementById("historyTable");
+const historyBody = document.getElementById("historyBody");
+
+const depositBtn = document.getElementById("depositBtn");
+const depositBox = document.getElementById("depositBox");
+const depositAmount = document.getElementById("depositAmount");
+const sendDepositBtn = document.getElementById("sendDepositBtn");
+const depositMsg = document.getElementById("depositMsg");
+
+const notifBtn = document.getElementById("notifBtn");
+const notifBox = document.getElementById("notifBox");
+const notifList = document.getElementById("notifList");
+const notifCount = document.getElementById("notifCount");
+
+let currentUser = localStorage.getItem("currentUser");
+if(!currentUser){ alert("لازم تسجل دخول"); location.href="index.html"; }
+
+/* ================= تحميل بيانات المستخدم ================= */
+function loadUserData(){
+    get(child(ref(db), 'users/'+currentUser)).then(snapshot=>{
+        if(!snapshot.exists()){ localStorage.removeItem("currentUser"); location.href="index.html"; return; }
+        const data = snapshot.val();
+        if(data.balance===undefined) data.balance=0;
+        welcome.textContent = "أهلاً يا "+currentUser;
+        balanceEl.textContent = "رصيدك: "+data.balance.toLocaleString()+" عملة";
+    });
+}
+loadUserData();
+
+/* ================= طلب الإيداع ================= */
+depositBtn.onclick = ()=>{ depositBox.style.display = depositBox.style.display==="block"?"none":"block"; }
+
+sendDepositBtn.onclick = ()=>{
+    depositMsg.textContent="";
+    const amt = Number(depositAmount.value);
+    if(isNaN(amt) || amt<=0){ depositMsg.textContent="اكتب مبلغ صحيح"; return; }
+
+    push(ref(db,'depositRequests'),{
+        user: currentUser,
+        amount: amt,
+        status:"pending",
+        date:new Date().toLocaleString()
+    }).then(()=>{
+        depositMsg.textContent="تم إرسال الطلب ✅";
+        depositAmount.value="";
+    });
+};
+
+/* ================= إشعارات جديدة ================= */
+let notifications = [];
+let unseenCount = 0;
+
+function loadNotificationsCount(){
+    get(child(ref(db),'notifications/'+currentUser)).then(snapshot=>{
+        notifications = [];
+        if(snapshot.exists()){
+            snapshot.forEach(childSnap=>{
+                notifications.push({key:childSnap.key, message:childSnap.val().message});
+            });
+            unseenCount = notifications.length;
+        } else unseenCount = 0;
+        updateBadge();
+    });
+}
+
+function updateBadge(){
+    notifCount.textContent = unseenCount;
+    notifCount.style.display = unseenCount>0?"block":"none";
+}
+
+notifBtn.onclick = (e)=>{
+    e.stopPropagation();
+    notifBox.style.display = notifBox.style.display==="block"?"none":"block";
+
+    // عرض الاشعار الاخير فقط عند الضغط
+    notifList.innerHTML="";
+    if(notifications.length>0){
+        const lastNotif = notifications[notifications.length-1];
+        const li = document.createElement("li");
+        li.classList.add("notif-item");
+        li.innerHTML = `<button class="delete-btn">🗑</button><span>${lastNotif.message}</span>`;
+        const delBtn = li.querySelector(".delete-btn");
+        delBtn.onclick = ()=>{
+            remove(ref(db,'notifications/'+currentUser+'/'+lastNotif.key));
+            li.remove();
+            unseenCount=0;
+            updateBadge();
+        };
+        notifList.appendChild(li);
+        unseenCount=0;
+        updateBadge();
+    }else{
+        notifList.innerHTML="<li style='color:#555;'>لا يوجد إشعارات</li>";
+    }
+};
+
+window.addEventListener("load", loadNotificationsCount);
+document.addEventListener("click",()=>{ notifBox.style.display="none"; });
+
+/* ================= إرسال تحويل ================= */
+sendBtn.onclick = ()=>{
+    msg.textContent = "";
+    const to = toUser.value.trim();
+    const amt = Number(amount.value);
+    if(!to || isNaN(amt) || amt<=0){ msg.textContent="الرجاء إدخال بيانات صحيحة"; return; }
+    if(to===currentUser){ msg.textContent="مينفعش تحول لنفسك"; return; }
+
+    get(child(ref(db),'users/'+to)).then(snapshot=>{
+        if(!snapshot.exists()){ msg.textContent="المستخدم غير موجود"; return; }
+        const recipient = snapshot.val();
+        get(child(ref(db),'users/'+currentUser)).then(snap=>{
+            const sender = snap.val();
+            if(sender.balance<amt){ msg.textContent="رصيدك غير كافي"; return; }
+
+            sender.balance-=amt;
+            recipient.balance+=amt;
+
+            const now = new Date().toLocaleString();
+            recipient.history??=[];
+            recipient.history.push({from:currentUser,amount:amt,date:now});
+            sender.history??=[];
+            sender.history.push({from:currentUser,amount:-amt,date:now});
+
+            let updates={};
+            updates['users/'+currentUser]=sender;
+            updates['users/'+to]=recipient;
+            update(ref(db),updates).then(()=>{ loadUserData(); toUser.value=""; amount.value=""; alert("تم التحويل بنجاح ✅"); });
+        });
+    });
+};
+
+/* ================= سجل التحويلات ================= */
+historyBtn.onclick = ()=>{
+    get(child(ref(db),'users/'+currentUser+'/history')).then(snapshot=>{
+        historyBody.innerHTML="";
+        const h = snapshot.val()||[];
+        if(h.length===0){ historyBody.innerHTML="<tr><td colspan='4'>لا يوجد عمليات</td></tr>"; }
+        else{
+            h.forEach(x=>{
+                let arrow = "";
+                if(x.amount > 0) arrow = `<span class="arrow-down">⬇</span>`;  // تحويل من طرفك
+                if(x.amount < 0) arrow = `<span class="arrow-up">⬆</span>`;  // تحويل إليك
+                historyBody.innerHTML+=`
+                <tr>
+                    <td>${x.from}</td>
+                    <td>${Math.abs(x.amount).toLocaleString()}</td>
+                    <td>${x.date}</td>
+                    <td>${arrow}</td>
+                </tr>`;
+            });
+        }
+        historyTable.style.display="table";
+    });
+};
+
+/* ================= تعديل الحساب ================= */
+editBtn.onclick = ()=>{
+    const newUser = prompt("يوزر جديد (سيب فاضي لو لا)");
+    const newPass = prompt("باسورد جديد (سيب فاضي لو لا)");
+    get(child(ref(db),'users/'+currentUser)).then(snapshot=>{
+        if(!snapshot.exists()) return;
+        let userData = snapshot.val();
+        let updates={};
+        if(newUser){ updates['users/'+newUser]=userData; updates['users/'+currentUser]=null; localStorage.setItem("currentUser",newUser); currentUser=newUser; }
+        if(newPass) userData.password=newPass;
+        updates['users/'+currentUser]=userData;
+        update(ref(db),updates).then(()=>{ alert("تم التعديل ✅"); loadUserData(); });
+    });
+};
+
+/* ================= تسجيل خروج ================= */
+logoutBtn.onclick = ()=>{ localStorage.removeItem("currentUser"); location.href="index.html"; };
+</script>
+</body>
+</html>

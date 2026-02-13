@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoinPay Owner</title>
+
+<style>
+body{
+    color: #fff;
+    font-family: Arial, sans-serif;
+    padding:30px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height: 100vh;
+    background-image: url('bbb.jpg');
+    background-size: cover;
+}
+
+h1{
+    margin-bottom:10px;
+    color:#cfa004;
+}
+
+#balance{
+    font-size:20px;
+    margin-bottom:20px;
+}
+
+/* صندوق التحويل */
+.box{
+    font-family: "El Messiri", sans-serif;
+    width:360px;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 6px 15px #cfa004;
+    margin-bottom:15px;
+    text-align:center;
+    color:rgb(255, 255, 255);
+}
+
+/* Inputs */
+input{
+    width:90%;
+    padding:10px;
+    margin:6px 0;
+    border-radius:8px;
+    border:2px solid #cfa004;
+    font-size:15px;
+}
+
+/* زرار عادي */
+.btn{
+    margin-top: 20px;
+    width:50%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+    display:block;
+    justify-content: center;
+}
+
+/* زرار ألوان */
+.btn-dark{
+    background:#cfa004;
+    color:#fff;
+    margin-bottom:15px;
+}
+.btn-dark:hover{
+    background:#7e6208;
+}
+
+.btn-red{
+    background:red;
+    color:#fff;
+    margin-top: 20px;
+    margin-left: 53px;
+    width:70%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+    display:block;
+}
+
+/* جدول اللاعبين */
+table{
+    width:95%;
+    border-collapse:collapse;
+    margin-top:20px;
+    margin-left:auto;
+    margin-right:auto;
+}
+th,td{
+    padding:10px;
+    border-bottom:1px solid rgb(221, 221, 221);
+    text-align:center;
+}
+th{
+    background:#222;
+    color:#fff;
+}
+
+/* أزرار تعديل وحذف وحظر ودخول ورسالة وخصم */
+.btn-delete,
+.btn-edit,
+.btn-block,
+.btn-login-player,
+.btn-message,
+.btn-deduct{
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:16px;
+}
+.btn-delete{color:red;}
+.btn-edit{color:#0a7cff;}
+.btn-block{color:#f39c12;}
+.btn-login-player{color:#27ae60;}
+.btn-message{color:#9b59b6;}
+.btn-deduct{color:#e74c3c;}
+
+/* الحالة */
+.status-online{color:lime;font-weight:bold;}
+.status-offline{color:red;font-weight:bold;}
+
+/* Responsive */
+@media (max-width: 480px){
+    .box, table{
+        width: 95%;
+    }
+    input{
+        width: 95%;
+    }
+    .btn{
+        width: 95%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Owner</h1>
+<div id="balance"></div>
+
+<!-- تحويل عادي -->
+<div class="box">
+    <h3>تحويل من رصيدك</h3>
+    <input id="toUser" placeholder="username">
+    <input id="amount" type="number" placeholder="المبلغ">
+    <button class="btn-red" id="transferBtn">تحويل</button>
+</div>
+
+<!-- البنك -->
+<div class="box" id="bankBox" style="display:none">
+    <h3>Bank</h3>
+    <input id="bankToUser" placeholder="username">
+    <input id="bankAmount" type="number" placeholder="المبلغ">
+    <button class="btn-red" id="bankTransferBtn">تحويل بنكي</button>
+</div>
+
+<!-- طلبات الإيداع -->
+<div class="box" id="depositRequestsBox" style="display:none">
+    <h3>طلبات الإيداع</h3>
+    <div id="requestsList"></div>
+</div>
+
+<!-- أزرار التحكم -->
+<button class="btn btn-dark" id="bankBtn">Bank</button>
+<button class="btn btn-dark" id="playersBtn">قائمة اللاعبين</button>
+<button class="btn btn-dark" id="depositBtn">طلبات الإيداع</button>
+<button class="btn btn-dark" id="logoutBtn">تسجيل خروج</button>
+
+<!-- جدول اللاعبين -->
+<table id="playersTable" style="display:none">
+<thead>
+<tr>
+    <th>#</th>
+    <th>اليوزر</th>
+    <th>الباسورد</th>
+    <th>الرصيد</th>
+    <th>تعديل</th>
+    <th>حذف</th>
+    <th>حظر/فك الحظر</th>
+    <th>دخول اللاعب</th>
+    <th>الحالة</th>
+    <th>رسالة</th>
+    <th>خصم</th>
+</tr>
+</thead>
+<tbody id="playersBody"></tbody>
+</table>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, update, remove, push } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// ---------------- Firebase config ----------------
+const firebaseConfig = {
+  apiKey: "AIzaSyB9mzy7VtnJV28qawDMYYEfTr8guf9Z5hQ",
+  authDomain: "coinpay-3f182.firebaseapp.com",
+  databaseURL: "https://coinpay-3f182-default-rtdb.firebaseio.com",
+  projectId: "coinpay-3f182",
+  storageBucket: "coinpay-3f182.firebasestorage.app",
+  messagingSenderId: "9785521136",
+  appId: "1:9785521136:web:117b57499cb35ba5db6335"
+};
+
+// ---------------- Initialize Firebase ----------------
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let currentUser = "coin";
+let usersData = {};
+
+// ---------------- تحديث الرصيد ----------------
+function updateBalance(){
+    if(usersData[currentUser]){
+        balance.textContent =
+        "رصيدك الحالي: " +
+        (usersData[currentUser].balance || 0).toLocaleString() +
+        " عملة";
+    }
+}
+
+// ---------------- سماع المستخدمين ----------------
+onValue(ref(db,"users"), snapshot=>{
+    usersData = snapshot.val() || {};
+    updateBalance();
+});
+
+// ---------------- تحويل عادي ----------------
+transferBtn.onclick = ()=>{
+    const to = toUser.value.trim();
+    const amt = Number(amount.value);
+
+    if(!usersData[to]) return alert("المستخدم غير موجود");
+    if(isNaN(amt) || amt<=0) return alert("مبلغ غير صحيح");
+    if(usersData[currentUser].balance < amt) return alert("رصيدك مش كفاية");
+
+    update(ref(db),{
+        ["users/"+currentUser+"/balance"]: usersData[currentUser].balance - amt,
+        ["users/"+to+"/balance"]: (usersData[to].balance||0) + amt
+    });
+
+    toUser.value=""; amount.value="";
+    alert("تم التحويل ✅");
+};
+
+// ---------------- البنك ----------------
+bankBtn.onclick = ()=>{
+    bankBox.style.display = bankBox.style.display==="none"?"block":"none";
+};
+bankTransferBtn.onclick = ()=>{
+    const to = bankToUser.value.trim();
+    const amt = Number(bankAmount.value);
+
+    if(!usersData[to]) return alert("المستخدم غير موجود");
+    if(isNaN(amt) || amt<=0) return alert("مبلغ غير صحيح");
+
+    update(ref(db),{
+        ["users/"+to+"/balance"]: (usersData[to].balance||0) + amt
+    });
+
+    bankToUser.value=""; bankAmount.value="";
+    alert("تم التحويل من البنك ♾️");
+};
+
+// ---------------- قائمة اللاعبين ----------------
+playersBtn.onclick = ()=>{
+    playersBody.innerHTML="";
+    let i=1;
+    for(let u in usersData){
+        if(u!==currentUser){
+            const user = usersData[u];
+            const blocked = user.blocked ? "فك الحظر" : "حظر";
+            const status = user.online ? "<span class='status-online'>أونلاين</span>" : "<span class='status-offline'>أوفلاين</span>";
+            playersBody.innerHTML += `
+                <tr>
+                    <td>${i++}</td>
+                    <td>${u}</td>
+                    <td>${user.password || ""}</td>
+                    <td>${(user.balance||0).toLocaleString()}</td>
+                    <td><button class="btn-edit" onclick="editUser('${u}')">تعديل</button></td>
+                    <td><button class="btn-delete" onclick="delUser('${u}')">حذف</button></td>
+                    <td><button class="btn-block" onclick="toggleBlock('${u}')">${blocked}</button></td>
+                    <td><button class="btn-login-player" onclick="loginPlayer('${u}')">دخول اللاعب</button></td>
+                    <td>${status}</td>
+                    <td><button class="btn-message" onclick="sendMessage('${u}')">رسالة</button></td>
+                    <td><button class="btn-deduct" onclick="deductPlayer('${u}')">خصم</button></td>
+                </tr>
+            `;
+        }
+    }
+    playersTable.style.display="table";
+};
+
+// ---------------- تعديل لاعب ----------------
+window.editUser = function(oldUser){
+    const newUser = prompt("يوزر جديد (اختياري)");
+    const newPass = prompt("باسورد جديد (اختياري)");
+
+    const userData = usersData[oldUser];
+    const updates = {};
+
+    if(newUser && !usersData[newUser]){
+        updates["users/"+newUser] = userData;
+        updates["users/"+oldUser] = null;
+        oldUser = newUser;
+    }
+
+    if(newPass){
+        updates["users/"+oldUser+"/password"] = newPass;
+    }
+
+    update(ref(db), updates);
+    alert("تم التعديل ✅");
+};
+
+// ---------------- حذف لاعب ----------------
+window.delUser = function(u){
+    if(confirm("حذف نهائي؟")){
+        remove(ref(db,"users/"+u));
+    }
+};
+
+// ---------------- حظر / فك الحظر ----------------
+window.toggleBlock = function(u){
+    const user = usersData[u];
+    const blocked = user.blocked ? false : true;
+    update(ref(db,"users/"+u+"/blocked"), blocked);
+    alert(blocked ? "تم حظر اللاعب" : "تم فك الحظر");
+};
+
+// ---------------- دخول اللاعب ----------------
+window.loginPlayer = function(u){
+    localStorage.setItem("currentUser", u);
+    window.location.href = "game.html";
+};
+
+// ---------------- إرسال رسالة للاعب ----------------
+window.sendMessage = function(u){
+    const msg = prompt("اكتب الرسالة للاعب "+u);
+    if(msg && msg.trim()!==""){
+        push(ref(db,"notifications/"+u),{
+            message: msg.trim(),
+            date: new Date().toLocaleString()
+        });
+        alert("تم إرسال الرسالة ✅");
+    }
+};
+
+// ---------------- خصم لاعب ----------------
+// ---------------- خصم لاعب ----------------
+window.deductPlayer = async function(u){
+    const amt = prompt("كم المبلغ الذي تريد خصمه من اللاعب "+u+"؟");
+    const msg = prompt("اكتب سبب الخصم:");
+    const amount = Number(amt);
+    if(isNaN(amount) || amount<=0) return alert("مبلغ غير صحيح");
+
+    // جلب آخر بيانات الرصيد مباشرة من Firebase عشان يكون صحيح مهما كان اللاعب أونلاين أو لا
+    const dbRef = ref(db, "users/"+u);
+    const snapshot = await get(dbRef);
+    const currentBalance = (snapshot.val()?.balance || 0);
+    const newBalance = currentBalance - amount;
+
+    // تحديث الرصيد
+    update(dbRef, { balance: newBalance });
+
+    // إضافة إشعار للاعب
+    push(ref(db,"notifications/"+u),{
+        message: `تم خصم ${amount} عملة. السبب: ${msg}`,
+        date: new Date().toLocaleString()
+    });
+
+    alert(`تم الخصم ✅\nالرصيد الجديد: ${newBalance} عملة`);
+};
+
+// ---------------- طلبات الإيداع ----------------
+depositBtn.onclick = ()=>{
+    depositRequestsBox.style.display = depositRequestsBox.style.display==="none"?"block":"none";
+};
+onValue(ref(db,"depositRequests"), snapshot=>{
+    let list="";
+    if(!snapshot.exists()){
+        requestsList.innerHTML="<p>لا يوجد طلبات حالياً</p>";
+        return;
+    }
+
+    snapshot.forEach(childSnap=>{
+        const id = childSnap.key;
+        const data = childSnap.val();
+        if(data.status==="pending"){
+            list += `<div>
+                <b>${data.user}</b> طلب ${data.amount} عملة
+                <button onclick="approveDeposit('${id}','${data.user}',${data.amount})">موافق</button>
+                <button onclick="rejectDeposit('${id}','${data.user}')">رفض</button>
+            </div>`;
+        }
+    });
+
+    if(list==="") list="<p>لا يوجد طلبات حالياً</p>";
+    requestsList.innerHTML=list;
+});
+
+// ---------------- قبول إيداع ----------------
+window.approveDeposit = function(id,user,amt){
+    let give = prompt(`اللاعب طلب ${amt} عملة، كم تعطيه؟`, amt);
+    give = Number(give);
+    if(isNaN(give) || give<=0) return alert("مبلغ غير صحيح");
+
+    update(ref(db),{
+        ["users/"+user+"/balance"]: (usersData[user].balance||0) + give,
+        ["depositRequests/"+id+"/status"]:"approved"
+    });
+
+    push(ref(db,"notifications/"+user),{
+        message:"تم قبول طلب الإيداع "+give+" ✅",
+        date:new Date().toLocaleString()
+    });
+};
+
+// ---------------- رفض إيداع ----------------
+window.rejectDeposit = function(id,user){
+    update(ref(db),{
+        ["depositRequests/"+id+"/status"]:"rejected"
+    });
+
+    push(ref(db,"notifications/"+user),{
+        message:"تم رفض طلب الإيداع ❌",
+        date:new Date().toLocaleString()
+    });
+};
+
+// ---------------- تسجيل خروج ----------------
+logoutBtn.onclick = ()=>{
+    localStorage.removeItem("currentUser");
+    location.href="index.html";
+};
+</script>
+
+</body>
+</html>

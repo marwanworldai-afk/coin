@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Contact</title>
+
+<style>
+
+/* خلفية الصفحة */
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:#fff;
+}
+
+/* البوكس */
+.container{
+    background: rgba(0,0,0,0.7);
+    padding:30px;
+    border-radius:15px;
+    text-align:center;
+    width:320px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* العنوان */
+h2{
+    margin-bottom:10px;
+    color:#25D366;
+}
+
+/* النص */
+p{
+    font-size:14px;
+    color:#ddd;
+}
+
+/* زر واتساب */
+.whatsapp-btn{
+    display:inline-block;
+    margin-top:20px;
+    background:#25D366;
+    color:#fff;
+    padding:12px 20px;
+    border-radius:10px;
+    text-decoration:none;
+    font-size:16px;
+    transition:0.3s;
+}
+
+.whatsapp-btn:hover{
+    background:#1ebe5d;
+    transform: scale(1.05);
+}
+
+/* زر رجوع */
+.back-btn{
+    display:block;
+    margin-top:15px;
+    color:#ccc;
+    text-decoration:none;
+    font-size:14px;
+}
+
+.back-btn:hover{
+    color:#fff;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>📱 تواصل واتساب</h2>
+
+    <p>اضغط على الزر للتواصل معنا مباشرة</p>
+
+    <!-- زر واتساب -->
+    <a id="whatsappLink" class="whatsapp-btn" target="_blank">
+        فتح واتساب
+    </a>
+
+    <!-- رجوع -->
+    <a href="index.html" class="back-btn">⬅ الرجوع للصفحة الرئيسية</a>
+
+</div>
+
+<script>
+
+// 👇 حط رقمك هنا
+let phoneNumber = "201234567890";
+
+// 👇 رسالة جاهزة (اختياري)
+let message = "السلام عليكم، عايز استفسر عن اللعبة";
+
+// تكوين الرابط
+let link = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+// حط اللينك في الزر
+document.getElementById("whatsappLink").href = link;
+
+</script>
+
+</body>
+</html>
