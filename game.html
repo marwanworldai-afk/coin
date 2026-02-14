@@ -4,25 +4,77 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoinPay Game</title>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Anton&family=Dancing+Script:wght@400..700&family=El+Messiri:wght@400..700&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+<link rel="icon" href="in.jpg" type="image/png">
 <style>
-body{
+body {
+    color: #fff;
     font-family: Arial, sans-serif;
-    background:#f2f2f2;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('bbb.jpg'); /* ضع هنا رابط الصورة أو اسم الملف */
+    background-size: cover; /* لتغطية كامل الصفحة */
+    background-position: center; /* توسيط الصورة */
+    background-repeat: no-repeat; /* تمنع تكرار الصورة */
+    font-family: "El Messiri", sans-serif;
+
 }
 
-.container{
-    background:#fff;
-    padding:25px;
-    width:360px;
-    border-radius:10px;
-    box-shadow:0 4px 10px rgba(0,0,0,.1);
-    text-align:center;
-    position:relative;
+.container {
+    background-image: url('kkk.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding-top: 70px;
+    width: 360px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px #cfa004;
+    text-align: center;
+    position: relative;
+}
+
+/* صورة اللاعب */
+#playerImage{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    object-fit:cover;
+    position:absolute;
+    top:-40px; /* نص الصورة فوق البوكس */
+    left:50%;
+    transform:translateX(-50%);
+    cursor:pointer;
+}
+
+/* صباح/مساء الخير */
+#greeting{
+    position:absolute;
+    top:10px;
+    right:15px;
+    font-size:20px;
+    font-weight:bold;
+    text-align:right;
+    font-family: "El Messiri", sans-serif;
+}
+
+/* اسم المستخدم تحت التحية */
+#welcome{
+    margin-left: 230px;
+    margin-top:-20px;
+    font-size:20px;
+    color: #cfa004;
+    font-family: "Roboto", sans-serif;
+}
+
+/* الرصيد */
+#balance{
+    font-size:26px;
+    margin:5px 0 15px 0;
 }
 
 /* زر الإشعارات */
@@ -34,8 +86,8 @@ body{
     height:40px;
     border-radius:50%;
     border:none;
-    background:#e60000;
-    color:#fff;
+    background:#000000;
+    color:#cfa004;
     font-size:18px;
     cursor:pointer;
     display:flex;
@@ -48,8 +100,8 @@ body{
     position:absolute;
     top:-5px;
     right:-5px;
-    background:yellow;
-    color:black;
+    background:rgb(255, 0, 0);
+    color:rgb(255, 255, 255);
     border-radius:50%;
     padding:2px 6px;
     font-size:12px;
@@ -59,16 +111,16 @@ body{
 
 /* صندوق الرسائل */
 #notifBox {
-    display:none; /* يظهر عند الضغط فقط */
+    display:none;
     position:absolute;
     top:50px;
     left:10px;
     width:300px;
     max-height:200px;
     overflow-y:auto;
-    background:#fff;
+    background-image: url('bbb.jpg'); /* ضع هنا رابط الصورة أو اسم الملف */
     border-radius:10px;
-    box-shadow:0 4px 10px rgba(0,0,0,.2);
+    box-shadow:0 4px 10px #cfa004;
     padding:10px;
     z-index:10;
     text-align:right;
@@ -79,7 +131,7 @@ body{
     justify-content:flex-end;
     align-items:center;
     margin-bottom:5px;
-    background:#f9f9f9;
+    background:#cfa004;
     padding:4px 6px;
     border-radius:5px;
     gap:8px;
@@ -95,7 +147,7 @@ body{
     line-height:16px;
     padding:0;
     text-align:center;
-    color:red;
+    color:rgb(255, 0, 0);
 }
 
 /* الرسالة على اليمين */
@@ -104,46 +156,44 @@ body{
     text-align:right;
 }
 
-h2{margin-bottom:10px}
-#balance{font-size:18px;margin-bottom:15px}
-
 input{
-    width:100%;
+    width:80%;
     padding:10px;
     margin:6px 0;
     border-radius:6px;
-    border:1px solid #ccc;
+    border:2px solid #cfa004;
 }
 
 button{
-    width:100%;
+    width:50%;
     padding:10px;
     margin-top:8px;
     border:none;
     border-radius:6px;
-    background:#e60000;
+    background:#cfa004;
     color:#fff;
-    font-size:15px;
+    font-size:20px;
     cursor:pointer;
 }
 
-button:hover{background:#ff0000}
+button:hover{background:#cfa0048a}
 
 .small-btn{
-    background:#222;
+    width:50%;
+    background:#cfa004;
     margin-top:6px;
 }
-.small-btn:hover{background:rgb(255, 0, 0)}
+.small-btn:hover{background:#cfa0048a}
 
 .error{
-    color:red;
+    color:rgb(255, 255, 255);
     font-size:14px;
     margin-top:6px
 }
 
 #depositBox{
     display:none;
-    border:1px solid #ccc;
+    border:1px solid rgb(255, 255, 255);
     padding:10px;
     border-radius:8px;
     margin-top:8px;
@@ -155,11 +205,12 @@ table{
     border-collapse:collapse;
     margin-top:10px;
     font-size:14px;
+    color: #cfa004;
 }
 
 th,td{
     padding:10px;
-    border-bottom:1px solid #ddd;
+    border-bottom:1px solid rgb(255, 255, 255);
     text-align:center;
 }
 
@@ -168,20 +219,26 @@ th{
     color:#fff;
 }
 
-.arrow-up {
-    color:green;
-    font-size:18px;
+.v {
+    color: #cfa004;
+    font-family: "El Messiri", sans-serif;
+    font-weight: 800;
 }
 
-.arrow-down {
-    color:red;
-    font-size:18px;
-}
+.arrow-up { color:rgb(0, 255, 0); font-size:18px; }
+.arrow-down { color:red; font-size:18px; }
+
 </style>
 </head>
 
 <body>
 <div class="container">
+
+<img id="playerImage" src="in.jpg" alt="Player">
+
+<div id="greeting"></div>
+<h2 id="welcome"></h2>
+<div id="balance"></div>
 
 <!-- زر الإشعارات -->
 <button id="notifBtn">
@@ -193,11 +250,8 @@ th{
     <ul id="notifList"></ul>
 </div>
 
-<h2 id="welcome"></h2>
-<div id="balance"></div>
 <hr>
-
-<h3>تحويل عملات</h3>
+<h3 class="v">تحويل عملات</h3>
 <input id="toUser" placeholder="اسم المستخدم">
 <input id="amount" type="number" placeholder="المبلغ">
 <button id="sendBtn">تحويل</button>
@@ -229,6 +283,7 @@ th{
 </table>
 
 <script type="module">
+    
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, get, child, update, push, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -245,8 +300,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+let currentUser = localStorage.getItem("currentUser");
+if(!currentUser){ alert("لازم تسجل دخول"); location.href="index.html"; }
+
+const greeting = document.getElementById("greeting");
 const welcome = document.getElementById("welcome");
 const balanceEl = document.getElementById("balance");
+const playerImage = document.getElementById("playerImage");
+
+// الزرار
 const msg = document.getElementById("msg");
 const sendBtn = document.getElementById("sendBtn");
 const toUser = document.getElementById("toUser");
@@ -254,9 +316,6 @@ const amount = document.getElementById("amount");
 const editBtn = document.getElementById("editBtn");
 const historyBtn = document.getElementById("historyBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const historyTable = document.getElementById("historyTable");
-const historyBody = document.getElementById("historyBody");
-
 const depositBtn = document.getElementById("depositBtn");
 const depositBox = document.getElementById("depositBox");
 const depositAmount = document.getElementById("depositAmount");
@@ -268,22 +327,25 @@ const notifBox = document.getElementById("notifBox");
 const notifList = document.getElementById("notifList");
 const notifCount = document.getElementById("notifCount");
 
-let currentUser = localStorage.getItem("currentUser");
-if(!currentUser){ alert("لازم تسجل دخول"); location.href="index.html"; }
-
-/* ================= تحميل بيانات المستخدم ================= */
 function loadUserData(){
     get(child(ref(db), 'users/'+currentUser)).then(snapshot=>{
         if(!snapshot.exists()){ localStorage.removeItem("currentUser"); location.href="index.html"; return; }
         const data = snapshot.val();
-        if(data.balance===undefined) data.balance=0;
-        welcome.textContent = "أهلاً يا "+currentUser;
-        balanceEl.textContent = "رصيدك: "+data.balance.toLocaleString()+" عملة";
+        if(!data.balance) data.balance=0;
+        welcome.textContent = currentUser;
+        balanceEl.textContent = "رصيدك:\n"+data.balance+" عملة";
+
+        // تحية صباح/مساء
+        const hour = new Date().getHours();
+        let greet = (hour<12)?"صباح الخير يا":" مساء الخير يا ";
+        greeting.textContent = greet;
     });
 }
 loadUserData();
 
-/* ================= طلب الإيداع ================= */
+
+
+/* ================= طلب إيداع ================= */
 depositBtn.onclick = ()=>{ depositBox.style.display = depositBox.style.display==="block"?"none":"block"; }
 
 sendDepositBtn.onclick = ()=>{
@@ -318,25 +380,20 @@ function loadNotificationsCount(){
         updateBadge();
     });
 }
-
 function updateBadge(){
     notifCount.textContent = unseenCount;
     notifCount.style.display = unseenCount>0?"block":"none";
 }
-
 notifBtn.onclick = (e)=>{
     e.stopPropagation();
     notifBox.style.display = notifBox.style.display==="block"?"none":"block";
-
-    // عرض الاشعار الاخير فقط عند الضغط
     notifList.innerHTML="";
     if(notifications.length>0){
         const lastNotif = notifications[notifications.length-1];
         const li = document.createElement("li");
         li.classList.add("notif-item");
         li.innerHTML = `<button class="delete-btn">🗑</button><span>${lastNotif.message}</span>`;
-        const delBtn = li.querySelector(".delete-btn");
-        delBtn.onclick = ()=>{
+        li.querySelector(".delete-btn").onclick = ()=>{
             remove(ref(db,'notifications/'+currentUser+'/'+lastNotif.key));
             li.remove();
             unseenCount=0;
@@ -349,9 +406,8 @@ notifBtn.onclick = (e)=>{
         notifList.innerHTML="<li style='color:#555;'>لا يوجد إشعارات</li>";
     }
 };
-
-window.addEventListener("load", loadNotificationsCount);
 document.addEventListener("click",()=>{ notifBox.style.display="none"; });
+window.addEventListener("load", loadNotificationsCount);
 
 /* ================= إرسال تحويل ================= */
 sendBtn.onclick = ()=>{
@@ -385,6 +441,7 @@ sendBtn.onclick = ()=>{
     });
 };
 
+
 /* ================= سجل التحويلات ================= */
 historyBtn.onclick = ()=>{
     get(child(ref(db),'users/'+currentUser+'/history')).then(snapshot=>{
@@ -394,12 +451,12 @@ historyBtn.onclick = ()=>{
         else{
             h.forEach(x=>{
                 let arrow = "";
-                if(x.amount > 0) arrow = `<span class="arrow-down">⬇</span>`;  // تحويل من طرفك
-                if(x.amount < 0) arrow = `<span class="arrow-up">⬆</span>`;  // تحويل إليك
+                if(x.amount > 0) arrow = `<span class="arrow-down">⬇</span>`;
+                if(x.amount < 0) arrow = `<span class="arrow-up">⬆</span>`;
                 historyBody.innerHTML+=`
                 <tr>
                     <td>${x.from}</td>
-                    <td>${Math.abs(x.amount).toLocaleString()}</td>
+                    <td>${Math.abs(x.amount)}</td>
                     <td>${x.date}</td>
                     <td>${arrow}</td>
                 </tr>`;
@@ -408,6 +465,8 @@ historyBtn.onclick = ()=>{
         historyTable.style.display="table";
     });
 };
+
+
 
 /* ================= تعديل الحساب ================= */
 editBtn.onclick = ()=>{
@@ -424,8 +483,55 @@ editBtn.onclick = ()=>{
     });
 };
 
+/* ================= تحميل صورة اللاعب عند فتح الصفحة ================= */
+function loadPlayerImage(){
+    get(child(ref(db),'users/'+currentUser+'/profileImage')).then(snapshot=>{
+        if(snapshot.exists()){
+            playerImage.src = snapshot.val();
+        }
+    });
+}
+
+loadPlayerImage();
+
+/* ================= تغيير صورة اللاعب وتثبيتها ================= */
+playerImage.onclick = ()=>{
+    const fileInput = document.createElement("input");
+    fileInput.type="file";
+    fileInput.accept="image/*";
+
+    fileInput.onchange = e=>{
+        const file = e.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt){
+            const imgData = evt.target.result;
+
+            // تغيير الصورة فوراً
+            playerImage.src = imgData;
+
+            // حفظ الصورة في Firebase
+            update(ref(db,'users/'+currentUser),{
+                profileImage: imgData
+            });
+        };
+
+        reader.readAsDataURL(file);
+    };
+
+    fileInput.click();
+};
+
+
+
 /* ================= تسجيل خروج ================= */
 logoutBtn.onclick = ()=>{ localStorage.removeItem("currentUser"); location.href="index.html"; };
+
+
+
 </script>
+
+
 </body>
 </html>
